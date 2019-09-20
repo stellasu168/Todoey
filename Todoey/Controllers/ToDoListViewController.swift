@@ -10,6 +10,7 @@ import UIKit
 
 class ToDoListViewController: UITableViewController {
     
+    // An array of 'Item' objects
     var itemArray = [Item]()
 
     let defaults = UserDefaults.standard
@@ -20,6 +21,7 @@ class ToDoListViewController: UITableViewController {
         
         let newItem = Item()
         newItem.title = "Find Mike"
+        //newItem.done = true
         itemArray.append(newItem)
         
         let newItem2 = Item()
@@ -31,9 +33,9 @@ class ToDoListViewController: UITableViewController {
         itemArray.append(newItem3)
         
         
-//        if let items = defaults.array(forKey: "TodoListArray") as? [String]{
-//            itemArray = items
-//        }
+        if let items = defaults.array(forKey: "TodoListArray") as? [Item] {
+            itemArray = items
+        }
         
     }
 
@@ -43,9 +45,23 @@ class ToDoListViewController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        
+        print("cellForRowAt called")
+       
         let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
         
-        cell.textLabel?.text = itemArray[indexPath.row].title
+        let item = itemArray[indexPath.row]
+        cell.textLabel?.text = item.title
+        
+        //Ternary operator ==>
+        // value = condition ? valueIfTrue : valueIfFalse
+        cell.accessoryType = item.done == true ? .checkmark : .none
+        
+        //if itemArray[indexPath.row].done == true {
+        //    cell.accessoryType = .checkmark
+        //} else {
+        //    cell.accessoryType = .none
+        //}
         
         return cell
     }
@@ -53,12 +69,14 @@ class ToDoListViewController: UITableViewController {
     //MARK - Tableview Delegate methods
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 
-        
-        if tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark {
-            tableView.cellForRow(at: indexPath)?.accessoryType = .none
-        } else{
-            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
+        if itemArray[indexPath.row].done == false {
+            itemArray[indexPath.row].done = true
+        } else {
+            itemArray[indexPath.row].done = false
         }
+        
+        tableView.reloadData()
+        
         tableView.deselectRow(at: indexPath, animated: true)
         
     }
@@ -72,10 +90,14 @@ class ToDoListViewController: UITableViewController {
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
             
             let newItem = Item()
+            newItem.title = textField.text!
+            
             self.itemArray.append(newItem)
             
             // Get save in a plist filer
-            self.defaults.setValue(self.itemArray, forKey: "TodoListArray")
+            // But can't store custom object in user defaults
+        //https://stackoverflow.com/questions/19720611/attempt-to-set-a-non-property-list-object-as-an-nsuserdefaults
+            //self.defaults.setValue(self.itemArray, forKey: "TodoListArray")
             
             self.tableView.reloadData()
         
