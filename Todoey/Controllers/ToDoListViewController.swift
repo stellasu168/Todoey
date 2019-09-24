@@ -13,11 +13,13 @@ class ToDoListViewController: UITableViewController {
     // An array of 'Item' objects
     var itemArray = [Item]()
 
-    let defaults = UserDefaults.standard
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
+    
+        print(dataFilePath)
         
         let newItem = Item()
         newItem.title = "Find Mike"
@@ -32,16 +34,16 @@ class ToDoListViewController: UITableViewController {
         newItem3.title = "Destor Dragon"
         itemArray.append(newItem3)
         
-        
-        if let items = defaults.array(forKey: "TodoListArray") as? [Item] {
-            itemArray = items
-        }
+//        if let items = defaults.array(forKey: "TodoListArray") as? [Item] {
+//            itemArray = items
+//        }
         
     }
 
     //MARK - Tableview Datasource methods
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return itemArray.count
+    
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -75,7 +77,7 @@ class ToDoListViewController: UITableViewController {
             itemArray[indexPath.row].done = false
         }
         
-        tableView.reloadData()
+        self.saveItems()
         
         tableView.deselectRow(at: indexPath, animated: true)
         
@@ -99,7 +101,7 @@ class ToDoListViewController: UITableViewController {
         //https://stackoverflow.com/questions/19720611/attempt-to-set-a-non-property-list-object-as-an-nsuserdefaults
             //self.defaults.setValue(self.itemArray, forKey: "TodoListArray")
             
-            self.tableView.reloadData()
+            self.saveItems()
         
         }
         
@@ -112,6 +114,22 @@ class ToDoListViewController: UITableViewController {
         
         present(alert, animated: true, completion: nil)
         
+        
+    }
+    
+    func saveItems() {
+        // create my own plist
+        let encoder = PropertyListEncoder()
+        
+        // Try to write the data to the plist
+        do {
+            let data = try encoder.encode(itemArray)
+            try data.write(to: dataFilePath!)
+        } catch {
+            print("Error encoding item array, \(error)")
+        }
+        
+        tableView.reloadData()
         
     }
     
